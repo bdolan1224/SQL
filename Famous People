@@ -1,0 +1,55 @@
+/* Create table about the people and what they do here */
+
+CREATE TABLE Famous_People (id INTEGER PRIMARY KEY  AUTOINCREMENT,
+    Fullname text,
+    Occupation text,
+    Age integer);
+    
+INSERT INTO Famous_People (fullname, occupation, age) VALUES ("Billie Eilish", "Singer", 21); 
+INSERT INTO Famous_People (fullname, occupation, age) VALUES ("Mike Tyson", "athlete", 56);
+INSERT INTO Famous_People (fullname, occupation, age) VALUES ("Millie Bobby Brown", "Actor", 19);
+INSERT INTO Famous_People (fullname, occupation, age) VALUES ("Beyonce", "singer", 41);
+INSERT INTO Famous_People (fullname, occupation, age) VALUES ("Criss Angel","magician", 55);
+INSERT INTO Famous_People (fullname, occupation, age) VALUES ("George Lucas", " filmmaker", 78); 
+INSERT INTO Famous_People (fullname, occupation, age) VALUES ("Oprah Winfrey", "actor", 69);
+INSERT INTO Famous_People (fullname, occupation, age) VALUES ("J.K. Rowling", "author", 57);
+INSERT INTO Famous_People (fullname, occupation, age) VALUES ("Kylie Jenner", "influencer", 21);
+INSERT INTO Famous_People (fullname, occupation, age) VALUES ("Tiger Woods", "athlete", 47);
+INSERT INTO Famous_People (fullname, occupation, age) VALUES ("Lionel Messi", "athlete", 35);
+INSERT INTO Famous_People (fullname, occupation, age) VALUES ("Akashiya Sanma", "actor", 67);
+INSERT INTO Famous_People (fullname, occupation, age) VALUES ("Jim Carrey", "actor", 61);
+INSERT INTO Famous_People (fullname, occupation, age) VALUES ("Amy Adams", "actor", 48);
+INSERT INTO Famous_People (fullname, occupation, age) VALUES ("Emma Watson", "actor", 22);
+
+
+
+CREATE TABLE wealth (id INTEGER PRIMARY KEY AUTOINCREMENT,  
+    Famous_people_id INTEGER,
+    net_worth TEXT,
+    nationality TEXT);
+
+INSERT into wealth (famous_people_id, net_worth, nationality) VALUES (1, "53 million", "american");
+INSERT into wealth (famous_people_id, net_worth, nationality) VALUES (2, "10 million", "american");
+INSERT into wealth (famous_people_id, net_worth, nationality) VALUES (3, "15 million", "British");
+INSERT into wealth (famous_people_id, net_worth, nationality) VALUES (4, "500 million", "american");
+INSERT into wealth (famous_people_id, net_worth, nationality) VALUES (5, "70 Million", "american");
+INSERT into wealth (famous_people_id, net_worth, nationality) VALUES (6, "5 billion", "american");
+INSERT into wealth (famous_people_id, net_worth, nationality) VALUES (7, "2 billion", "american");
+INSERT into wealth (famous_people_id, net_worth, nationality) VALUES (8, "1 billion", "british");
+INSERT into wealth (famous_people_id, net_worth, nationality) VALUES (9, "1 billion", "american");
+INSERT into wealth (famous_people_id, net_worth, nationality) VALUES (10, "1 billion", "american");
+INSERT into wealth (famous_people_id, net_worth, nationality) VALUES (11, "620 million", "argentina");
+INSERT into wealth (famous_people_id, net_worth, nationality) VALUES (12, "5 million", "japan");
+INSERT into wealth (famous_people_id, net_worth, nationality) VALUES (13, "180 million", "canada");
+INSERT into wealth (famous_people_id, net_worth, nationality) VALUES (14, "60 million", "american");
+INSERT into wealth (famous_people_id, net_worth, nationality) VALUES (15, "85 million", "british");
+
+/*Return total net worth for each famous person*/
+
+SELECT famous_people.fullname, wealth.net_worth 
+    FROM famous_people
+    JOIN Wealth 
+    ON famous_people.id = wealth.Famous_people_id
+    GROUP BY age;
+    
+
