@@ -1,0 +1,65 @@
+SELECT id,
+       artist_name,
+       track_name,
+       track_id,
+       popularity,
+       danceability,
+       energy,
+       song_key,
+       loudness,
+       song_mode,
+       speechiness,
+       acousticness,
+       instrumentalness,
+       liveness,
+       valence,
+       tempo,
+       duration_ms,
+       time_signature
+  FROM Spotifydata;
+
+#I determined who the Top 20 artists are by popularity 
+
+SELECT artist_name, popularity
+    FROM Spotifydata
+    Order by popularity asc 
+    Limit 20;
+
+#I determind which artists are the loudest by liveness
+
+Select artist_name, loudness, liveness
+    FROM Spotifydata
+    Order BY Liveness desc
+    Limit 20;
+
+#I determined the avg popularity, danceability, and energy by artist and track.
+
+SELECT
+    artist_name,
+    track_name,
+    AVG(popularity) AS avg_popularity,
+    AVG(danceability) AS avg_danceability,
+    AVG(energy) AS avg_energy
+FROM
+    Spotifydata
+GROUP BY
+    artist_name, track_name;
+
+List of the top 20 most popular songs
+
+SELECT track_name, popularity
+    FROM Spotifydata
+    WHERE popularity >=90
+    Order by popularity desc
+    Limit 20;
+
+Which artist released the shortest song?
+
+SELECT artist_name, track_name, MIN(duration_ms) as Length
+    FROM Spotifydata;
+
+Which artist released the longest song?
+
+SELECT artist_name, track_name, MAX(duration_ms) as Length
+    FROM Spotifydata;
+
