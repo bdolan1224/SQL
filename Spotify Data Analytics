@@ -93,3 +93,16 @@ SELECT artist_name, track_name, MIN(duration_ms) as Length
 SELECT artist_name, track_name, MAX(duration_ms) as Length
     FROM Spotifydata;
 
+#7. The average popularity for the artists in the Spotify data table. Then displayed the name, average popularity, and labeled as "Top Star" for every artist with an average popularity of 90 or above
+WITH popularity_average_CTE AS (
+SELECT s.artist_name,
+AVG(s.popularity) AS average_popularity
+FROM SpotifyData s 
+GROUP BY s.artist_name
+)
+ 
+SELECT  artist_name,
+        average_popularity,
+        'Top Star' AS tag
+FROM popularity_average_CTE
+WHERE average_popularity>=90;
