@@ -1,3 +1,33 @@
+# For this project, I downloaded Spotify data from Kaggle.
+# Then I created a table to insert Spotify data into.
+# Finally, I performed analytics on the data using SQL. 
+
+#Creating the table: 
+CREATE TABLE BIT_DB.Spotifydata (
+id integer PRIMARY KEY,
+artist_name varchar NOT NULL,
+track_name varchar NOT NULL,
+track_id varchar NOT NULL,
+popularity integer NOT NULL,
+danceability decimal(4,3) NOT NULL,
+energy decimal(4,3) NOT NULL,
+key integer NOT NULL,
+loudness decimal(5,3) NOT NULL,
+mode integer NOT NULL,
+speechiness decimal(5,4) NOT NULL,
+acousticness decimal(6,5) NOT NULL,
+instrumentalness text NOT NULL,
+liveness decimal(5,4) NOT NULL,
+valence decimal(4,3) NOT NULL,
+tempo decimal(6,3) NOT NULL,
+duration_ms integer NOT NULL,
+time_signature integer NOT NULL 
+)
+
+#Then I inserted the Spotify Data .csv into the table.
+
+#Next, I explored the data using the following SQL. 
+
 SELECT id,
        artist_name,
        track_name,
@@ -18,21 +48,21 @@ SELECT id,
        time_signature
   FROM Spotifydata;
 
-#I determined who the Top 20 artists are by popularity 
+#1. I determined who the Top 20 artists are by popularity 
 
 SELECT artist_name, popularity
     FROM Spotifydata
     Order by popularity asc 
     Limit 20;
 
-#I determind which artists are the loudest by liveness
+2. I determind which artists are the loudest by liveness
 
 Select artist_name, loudness, liveness
     FROM Spotifydata
     Order BY Liveness desc
     Limit 20;
 
-#I determined the avg popularity, danceability, and energy by artist and track.
+#3. I determined the avg popularity, danceability, and energy by artist and track.
 
 SELECT
     artist_name,
@@ -45,7 +75,7 @@ FROM
 GROUP BY
     artist_name, track_name;
 
-List of the top 20 most popular songs
+#4. List of the top 20 most popular songs
 
 SELECT track_name, popularity
     FROM Spotifydata
@@ -53,12 +83,12 @@ SELECT track_name, popularity
     Order by popularity desc
     Limit 20;
 
-Which artist released the shortest song?
+#5. Which artist released the shortest song?
 
 SELECT artist_name, track_name, MIN(duration_ms) as Length
     FROM Spotifydata;
 
-Which artist released the longest song?
+#6. Which artist released the longest song?
 
 SELECT artist_name, track_name, MAX(duration_ms) as Length
     FROM Spotifydata;
