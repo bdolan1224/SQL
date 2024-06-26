@@ -16,7 +16,32 @@ INSERT INTO clothing VALUES (13, "Scarf", 66, 99.00, "L");
 INSERT INTO clothing VALUES (14, "Shirt", 88, 54.00, "L");
 INSERT INTO clothing VALUES (15, "Tank Top", 99, 54.00, "L");
 
+Retrieve All Items Ordered by Price
 SELECT * FROM clothing 
 ORDER BY price;
 SELECT SUM(quantity) FROM clothing;
 SELECT * FROM clothing;
+
+Retrieve All Items with Quantity Greater Than 50:
+SELECT * 
+FROM clothing 
+WHERE quantity > 50;
+
+Find the Average Price of All Items
+SELECT AVG(price) AS average_price 
+FROM clothing;
+
+Get the Total Number of Items in Stock
+SELECT SUM(quantity) AS total_items_in_stock 
+FROM clothing;
+
+List Items Grouped by Item Type with Their Respective Quantities
+SELECT item_type, SUM(quantity) AS total_quantity 
+FROM clothing 
+GROUP BY item_type;
+
+Retrieve Clothing Priced Above 100
+SELECT * 
+FROM clothing 
+WHERE price > 100.00;
+
