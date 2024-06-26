@@ -1,5 +1,3 @@
---Create clothing store database
-
 CREATE TABLE clothing (id INTEGER PRIMARY KEY, item_type TEXT, quantity INTEGER, price INTEGER, size TEXT);
 
 INSERT INTO clothing VALUES (1, "Dress", 10, 54.00, "L");
