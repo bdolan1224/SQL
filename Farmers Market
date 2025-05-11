@@ -1,0 +1,230 @@
+-- 1. What are the first 10 products listed in the product table?
+SELECT *
+FROM product
+ORDER BY product_id
+LIMIT 10;
+
+-- 2. Who are the first 10 vendors, sorted by type and name?
+SELECT *
+FROM vendor
+ORDER BY vendor_type, vendor_name, vendor_id 
+LIMIT 10;
+
+-- 3. What are the full names of the first five customers?
+SELECT 
+  CONCAT(customer_first_name, ' ', customer_last_name) AS full_name
+FROM customer
+LIMIT 5;
+
+-- 4. What was the total cost of each customer purchase, ranked by price?
+SELECT 
+  market_date,
+  ROUND(quantity * cost_to_customer_per_qty) as total_cost
+FROM customer_purchases
+ORDER BY total_cost DESC;
+
+-- 5. Who owns each vendor, with names in uppercase?
+SELECT 
+  vendor_name, 
+  vendor_type,  
+  UPPER(CONCAT(vendor_owner_first_name, ' ', vendor_owner_last_name)) as vendor_owner_full_name
+FROM vendor
+ORDER BY vendor_name ASC;
+
+-- 6. What are all medium or large-sized products?
+SELECT *
+FROM product
+WHERE product_size IN ('medium','large');
+
+-- 7. What did customer 1 buy in August 2019?
+SELECT *
+FROM customer_purchases 
+WHERE market_date BETWEEN '2019-08-01' AND '2019-08-31'
+  AND customer_id = 1 
+ORDER BY market_date;
+
+-- 8. What purchases were made by customers not in zip code 22821?
+SELECT *
+FROM customer_purchases
+WHERE customer_id IN (
+  SELECT customer_id
+  FROM customer 
+  WHERE customer_zip <> 22821
+);
+
+-- 9. Which purchases cost less than $1?
+SELECT  
+  product_id,
+  vendor_id,
+  market_date,
+  customer_id,
+  quantity,
+  cost_to_customer_per_qty,
+  transaction_time,
+  CASE WHEN quantity * cost_to_customer_per_qty < 1 THEN 1 ELSE 0 END AS less_than_one_dollar_flag
+FROM customer_purchases;
+
+-- 10. Which products contain the word “potato”?
+SELECT 
+  product_id,
+  product_name, 
+  product_size, 
+  product_category_id,
+  product_qty_type,
+  CASE WHEN LOWER(product_name) LIKE '%potato%' THEN 1 ELSE 0 END AS potato_flag 
+FROM product;
+
+-- 11. What purchases were made and by whom, with date/time listed?
+SELECT
+  customer.customer_first_name,
+  customer.customer_last_name,
+  customer_purchases.market_date,
+  customer_purchases.transaction_time
+FROM customer
+INNER JOIN customer_purchases ON customer.customer_id = customer_purchases.customer_id
+ORDER BY customer.customer_first_name ASC, customer.customer_last_name ASC;
+
+-- 12. What product names and categories are available?
+SELECT
+  product.product_name,
+  product.product_size,
+  product_category.product_category_name
+FROM product_category
+RIGHT JOIN product ON product.product_category_id = product_category.product_category_id;
+
+-- 13. What products does each vendor sell?
+SELECT DISTINCT
+  vendor.vendor_name,
+  product.product_name
+FROM vendor
+INNER JOIN vendor_inventory ON vendor.vendor_id = vendor_inventory.vendor_id
+INNER JOIN product ON vendor_inventory.product_id = product.product_id
+ORDER BY vendor.vendor_name ASC;
+
+-- 14. What purchases came from customers not in zip 22821?
+SELECT
+  customer_purchases.*
+FROM customer_purchases
+JOIN customer ON customer_purchases.customer_id = customer.customer_id
+WHERE customer.customer_zip <> '22821';
+
+-- 15. What products were sold by vendors in September 2020?
+SELECT
+  v.vendor_name,
+  m.market_date,
+  p.product_name,
+  pc.product_category_name
+FROM vendor v
+JOIN vendor_inventory vi ON v.vendor_id = vi.vendor_id
+JOIN market_date_info m ON vi.market_date = m.market_date
+JOIN product p ON vi.product_id = p.product_id
+JOIN product_category pc ON p.product_category_id = pc.product_category_id
+WHERE m.market_date BETWEEN '2020-09-01' AND '2020-09-30'
+ORDER BY v.vendor_name ASC, m.market_date ASC;
+
+-- 16. How many products are offered by size?
+SELECT
+  product_size,
+  COUNT(*) AS "count(*)"
+FROM product
+WHERE product_size IN ('small', 'medium', 'large')
+GROUP BY product_size
+ORDER BY product_size;
+
+-- 17. How many products belong to each category?
+SELECT
+  pc.product_category_name,
+  COUNT(p.product_id) AS num_product
+FROM product_category pc
+JOIN product p ON pc.product_category_id = p.product_category_id
+GROUP BY pc.product_category_name
+ORDER BY num_product DESC;
+
+-- 18. What is the price range for each product category?
+SELECT
+  pc.product_category_name,
+  MAX(vi.original_price) AS "max(original_price)",
+  MIN(vi.original_price) AS "min(original_price)"
+FROM product_category pc
+JOIN product p ON pc.product_category_id = p.product_category_id
+JOIN vendor_inventory vi ON p.product_id = vi.product_id
+GROUP BY pc.product_category_name;
+
+-- 19. How many different products does each vendor sell?
+SELECT
+  v.vendor_name,
+  COUNT(DISTINCT vi.product_id) AS "count(distinct product_id)"
+FROM vendor v
+LEFT JOIN vendor_inventory vi ON v.vendor_id = vi.vendor_id
+GROUP BY v.vendor_name;
+
+-- 20. What are the total quantities sold by product?
+SELECT
+  p.product_name,
+  SUM(vi.quantity) AS total_quantity
+FROM product p
+JOIN vendor_inventory vi ON p.product_id = vi.product_id
+GROUP BY p.product_name
+HAVING total_quantity > 3000
+ORDER BY total_quantity ASC;
+
+-- 21. What is each customer’s highest-quantity purchase?
+SELECT
+  c.customer_first_name,
+  c.customer_last_name,
+  cp.quantity,
+  ROW_NUMBER() OVER(PARTITION BY c.customer_id ORDER BY cp.quantity DESC) AS quantity_rank
+FROM customer_purchases cp
+JOIN customer c ON cp.customer_id = c.customer_id
+ORDER BY c.customer_last_name, c.customer_first_name, quantity_rank;
+
+-- 22. What are each customer’s top 2 quantity purchases?
+SELECT
+  sub.customer_first_name,
+  sub.customer_last_name,
+  sub.quantity,
+  sub.quantity_rank
+FROM (
+  SELECT
+    c.customer_first_name,
+    c.customer_last_name,
+    cp.quantity,
+    DENSE_RANK() OVER(PARTITION BY c.customer_id ORDER BY cp.quantity DESC) AS quantity_rank
+  FROM customer_purchases cp
+  JOIN customer c ON cp.customer_id = c.customer_id
+) sub
+WHERE sub.quantity_rank <= 2
+ORDER BY sub.customer_last_name, sub.customer_first_name, sub.quantity_rank;
+
+-- 23. What is the average price by market date?
+SELECT
+  vendor_id,
+  market_date,
+  original_price,
+  AVG(original_price) OVER (PARTITION BY market_date ORDER BY market_date) AS average_price_by_market_date
+FROM vendor_inventory
+ORDER BY market_date, vendor_id;
+
+-- 24. What was each vendor’s previous booth number?
+SELECT
+  market_date,
+  vendor_id,
+  booth_number,
+  LAG(booth_number) OVER(PARTITION BY vendor_id ORDER BY market_date) AS previous_booth_number
+FROM vendor_booth_assignments
+ORDER BY market_date, vendor_id;
+
+-- 25. What are the top decile Fresh category products in Sept 2019?
+SELECT
+  vi.market_date,
+  p.product_name,
+  pc.product_category_name,
+  vi.quantity * vi.original_price AS cost,
+  NTILE(10) OVER (ORDER BY vi.quantity * vi.original_price) AS decile
+FROM product p
+INNER JOIN product_category pc ON p.product_category_id = pc.product_category_id
+INNER JOIN vendor_inventory vi ON p.product_id = vi.product_id
+WHERE pc.product_category_name LIKE '%Fresh%'
+  AND vi.market_date >= '2019-09-01'
+  AND vi.market_date <= '2019-09-30'
+ORDER BY vi.market_date DESC, p.product_name DESC;
