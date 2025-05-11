@@ -233,3 +233,150 @@ WHERE pc.product_category_name LIKE '%Fresh%'
   AND vi.market_date >= '2019-09-01'
   AND vi.market_date <= '2019-09-30'
 ORDER BY vi.market_date DESC, p.product_name DESC;
+
+26. What are the days between a customer's first and second purchases?
+WITH cte AS (
+  SELECT 
+    *, 
+    ROW_NUMBER() OVER (PARTITION BY customer_id ORDER BY market_date) AS prank,
+    LEAD(market_date, 1) OVER (PARTITION BY customer_id ORDER BY market_date) AS NextPurchaseDate
+  FROM customer_purchases
+)
+SELECT *, DATEDIFF(NextPurchaseDate, market_date) AS DaysBetweenFirstTwoPurchases
+FROM cte 
+WHERE prank = 1;
+
+27. What is the first market date in 2019 and 2020?
+SELECT market_year, MIN(market_date) AS first_market_date
+FROM market_date_info
+WHERE market_year = '2019'
+
+UNION
+
+SELECT market_year, MIN(market_date) AS first_market_date
+FROM market_date_info
+WHERE market_year = '2020';
+
+-- 28. What is each customer's first recorded purchase?
+SELECT *
+FROM (
+  SELECT *, 
+         ROW_NUMBER() OVER (PARTITION BY customer_id ORDER BY market_date) AS prank
+  FROM customer_purchases
+) sub
+WHERE prank = 1;
+
+-- 29. What are the total weekly sales across all vendors?
+WITH sales_by_day_vendor AS (
+  SELECT
+    cp.market_date,
+    md.market_day,
+    md.market_week,
+    md.market_year,
+    cp.vendor_id,
+    v.vendor_name,
+    v.vendor_type,
+    ROUND(SUM(cp.quantity * cp.cost_to_customer_per_qty), 2) AS sales
+  FROM customer_purchases AS cp
+  LEFT JOIN market_date_info AS md ON cp.market_date = md.market_date
+  LEFT JOIN vendor AS v ON cp.vendor_id = v.vendor_id
+  GROUP BY cp.market_date, cp.vendor_id
+  ORDER BY cp.market_date, cp.vendor_id
+)
+SELECT
+  s.market_year,
+  s.market_week,
+  SUM(s.sales) AS weekly_sales
+FROM sales_by_day_vendor AS s
+GROUP BY s.market_year, s.market_week;
+
+-- 30. View: Daily vendor sales details
+CREATE VIEW vw_sales_by_day_vendor AS
+SELECT
+  cp.market_date,
+  md.market_day,
+  md.market_week,
+  md.market_year,
+  cp.vendor_id,
+  v.vendor_name,
+  v.vendor_type,
+  ROUND(SUM(cp.quantity * cp.cost_to_customer_per_qty), 2) AS sales
+FROM customer_purchases AS cp
+LEFT JOIN market_date_info AS md ON cp.market_date = md.market_date
+LEFT JOIN vendor AS v ON cp.vendor_id = v.vendor_id
+GROUP BY cp.market_date, cp.vendor_id
+ORDER BY cp.market_date, cp.vendor_id;
+
+-- 31. Vendor 7 sales between $150 and $200
+SELECT * 
+FROM vw_sales_by_day_vendor
+WHERE vendor_id = 7
+  AND sales > 150 AND sales < 200;
+
+-- 32. View: Sales per date/vendor/product including discount and % sold
+CREATE VIEW vw_sales_per_date_vendor_product AS
+SELECT
+  vi.market_date,
+  vi.vendor_id,
+  v.vendor_name,
+  vi.product_id,
+  p.product_name,
+  vi.quantity AS quantity_available,
+  sales.quantity_sold,
+  ROUND((sales.quantity_sold / vi.quantity) * 100, 2) AS percent_of_available_sold,
+  vi.original_price,
+  (vi.original_price * sales.quantity_sold) - sales.total_sales AS discount_amount,
+  sales.total_sales
+FROM vendor_inventory AS vi
+LEFT JOIN (
+  SELECT
+    market_date,
+    vendor_id,
+    product_id,
+    SUM(quantity) AS quantity_sold,
+    SUM(quantity * cost_to_customer_per_qty) AS total_sales
+  FROM customer_purchases
+  GROUP BY market_date, vendor_id, product_id
+) AS sales ON vi.market_date = sales.market_date
+          AND vi.vendor_id = sales.vendor_id
+          AND vi.product_id = sales.product_id
+LEFT JOIN vendor v ON vi.vendor_id = v.vendor_id
+LEFT JOIN product p ON vi.product_id = p.product_id
+ORDER BY vi.vendor_id, vi.product_id, vi.market_date;
+
+-- 33. View all sales per vendor/product/date
+SELECT * FROM vw_sales_per_date_vendor_product;
+
+-- 34. What is the customer traffic by day and hour?
+SELECT 
+  DAYNAME(market_date), 
+  EXTRACT(HOUR FROM transaction_time),
+  COUNT(DISTINCT customer_id)
+FROM customer_purchases
+GROUP BY 
+  DAYNAME(market_date), 
+  EXTRACT(HOUR FROM transaction_time)
+ORDER BY 
+  DAYNAME(market_date), 
+  EXTRACT(HOUR FROM transaction_time);
+
+-- 35. What quantities were sold and total sales for each vendor/product/date combination?
+WITH cte_sales AS (
+  SELECT 
+    market_date, 
+    vendor_id, 
+    product_id, 
+    SUM(quantity) AS quantity_sold,
+    SUM(quantity * cost_to_customer_per_qty) AS total_sales 
+  FROM customer_purchases 
+  GROUP BY market_date, vendor_id, product_id
+)
+SELECT 
+  vi.*, 
+  s.quantity_sold,
+  s.total_sales
+FROM cte_sales AS s
+JOIN vendor_inventory AS vi 
+  ON s.market_date = vi.market_date
+  AND s.vendor_id = vi.vendor_id
+  AND s.product_id = vi.product_id;
