@@ -4,5 +4,4 @@
 
 ## Tableau Project: IMDB Movie Trends
 - 📄 [Download Dashboard (TWBX)](./IMDB_Movie_Dashboard.twbx)
-- 📸 ![Preview](./IMDB_Movie_Dashboard.png)
-
+- 📸 ![Preview](https://github.com/bdolan1224/SQL/blob/Tableau/Tableau%20Dashboards)
