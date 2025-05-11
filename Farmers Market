@@ -1,6 +1,7 @@
 Farkmers Market 
 
-This project explores and analyzes operations at a local farmers' market using structured SQL queries. The database includes information on customers, vendors, products, market dates, booth assignments, and purchases.
+This project explores and analyzes operations at a local farmers' market using structured SQL queries. The database includes information on customers, 
+vendors, products, market dates, booth assignments, and purchases.
 
 -- 1. What are the first 10 products listed in the product table?
 SELECT *
